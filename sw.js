@@ -1,6 +1,6 @@
-// Guarda la app en el teléfono para que abra aunque no haya señal.
-const CACHE = 'aje-v1';
-const SHELL = ['./', 'index.html', 'app.html', 'config.js', 'manifest.webmanifest', 'icon.svg', 'img/free-blanco.png', 'img/rinti-r.png', 'img/ricocan.png', 'img/ricocat.png'];
+// Guarda la app de canjistas en el teléfono para que abra aunque no haya señal.
+const CACHE = 'aje-v2';
+const SHELL = ['./', 'index.html', 'app.html', 'config.js', 'manifest.webmanifest', 'icon.svg', 'img/free-blanco.png', 'img/aje.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));

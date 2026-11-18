@@ -1,9 +1,22 @@
 {
-  "name": "Canje Mayorista AJE · Registro",
+  "name": "Canje Mayorista AJE · Canjistas",
   "short_name": "Canje AJE",
   "start_url": "./app.html",
   "display": "standalone",
-  "background_color": "#f4f4f2",
+  "background_color": "#f3f4fb",
   "theme_color": "#3b47e0",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "icons": [
+    {
+      "src": "img/aje.png",
+      "sizes": "702x313",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }
