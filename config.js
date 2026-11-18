@@ -2,7 +2,7 @@
 window.AJE = {
   // URL de la app web de Apps Script (termina en /exec).
   // Vacío = modo demo: la app guarda todo solo en el celular y no envía nada.
-  API_URL: '',
+  API_URL: 'https://script.google.com/macros/s/AKfycbzvvEU3Et_czdSzQAzKxZEa7LFiQbh25raYisRgAywWMBGZYYZ2LPrMTeRQIgujzA0d/exec',
 
   CAMPANA: 'Canje Mayorista AJE',
   MERCADOS: ['Productores', 'Caquetá', 'Unicachi Norte', 'Huamantanga'],

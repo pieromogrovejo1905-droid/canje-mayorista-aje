@@ -1,5 +1,5 @@
 // Guarda la app de canjistas en el teléfono para que abra aunque no haya señal.
-const CACHE = 'aje-v2';
+const CACHE = 'aje-v3';
 const SHELL = ['./', 'index.html', 'app.html', 'config.js', 'manifest.webmanifest', 'icon.svg', 'img/free-blanco.png', 'img/aje.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

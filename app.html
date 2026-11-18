@@ -239,7 +239,7 @@ document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => { pintar
 /* ---------- registros locales del día ---------- */
 function reg() { const r = LS.get('reg', { fecha: hoy(), items: [] }); return r.fecha === hoy() ? r : { fecha: hoy(), items: [] }; }
 function guardarLocal(item) { const r = reg(); r.items.push(item); LS.set('reg', r); }
-function mercadoActual() { return sesion.rol === 'supervisor' ? ($('#iMercado').value || LS.get('mercadoSup', C.MERCADOS[0])) : sesion.mercado; }
+function mercadoActual() { return /^(supervisor|coordinador)/.test(sesion.rol) ? ($('#iMercado').value || LS.get('mercadoSup', C.MERCADOS[0])) : sesion.mercado; }
 function bebidaDia() { const b = LS.get('bebidaDia', null); return b && b.fecha === hoy() && b.mercado === mercadoActual() ? b : null; }
 
 /* ---------- mecánica ---------- */
@@ -345,7 +345,7 @@ $('#bSalir').onclick = () => { if (cola().length) { toast('Tienes registros por 
 /* ---------- inicio ---------- */
 function pintarInicio() {
   if (!sesion) return;
-  const m = mercadoActual(), items = reg().items.filter(x => x.mercado === m || sesion.rol !== 'supervisor');
+  const m = mercadoActual(), items = reg().items.filter(x => x.mercado === m || !/^(supervisor|coordinador)/.test(sesion.rol));
   const canjes = items.filter(x => x.tipo === 'canje');
   $('#iHola').textContent = `Hola, ${sesion.nombre}`;
   $('#iFecha').textContent = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + m;
@@ -370,7 +370,7 @@ function pintarInicio() {
 function arrancar() {
   $('#demoBar').hidden = !DEMO; pintarRed();
   if (!sesion) { $('#lDemo').hidden = !DEMO; ver('vLogin'); return; }
-  const esSup = sesion.rol === 'supervisor';
+  const esSup = /^(supervisor|coordinador)/.test(sesion.rol);
   $('#iMercadoSel').hidden = !esSup;
   if (esSup) { $('#iMercado').innerHTML = C.MERCADOS.map(m => `<option>${m}</option>`).join(''); $('#iMercado').value = LS.get('mercadoSup', C.MERCADOS[0]); }
   pintarInicio(); ver('vInicio'); enviarCola();
