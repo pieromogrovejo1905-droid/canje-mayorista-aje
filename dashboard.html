@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Canje Rinti · Dashboard</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    color-scheme:light;
+    /* Identidad Free */
+    --accent:#3b47e0; --accent-soft:#eceefd; --navy:#0b1f4d; --green:#3f8a55;
+    --bg:#f3f4fb; --card:#fff; --ink:#0b1f4d; --ink2:#4a5275; --muted:#8a90ab; --line:#e1e4f3; --grid:#eceef8;
+    --ok:#1d7a46; --ok-soft:#e6f4ec; --warn:#9a5800; --warn-soft:#fdf1df; --err:#b42318; --err-soft:#fdecea;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:var(--accent);color:#fff;padding:18px 16px 22px;position:relative;overflow:hidden}
+  header::before{content:"";position:absolute;right:-60px;top:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08)}
+  header::after{content:"";position:absolute;left:46%;bottom:-30px;width:56px;height:56px;border-radius:50%;background:#7db843}
+  .hwrap{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;justify-content:space-between;position:relative;z-index:1}
+  .brand{display:flex;align-items:center;gap:16px}
+  .brand .free{height:46px;display:block}
+  .brand .sep{width:1px;height:44px;background:rgba(255,255,255,.4)}
+  .brand .r{height:48px;width:48px;border-radius:12px;display:block}
+  .brand .tt{line-height:1.2}
+  .brand .kick{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:600}
+  .brand b{font-size:22px;display:block;font-weight:800;letter-spacing:-.01em}
+  .brand span{opacity:.85;font-size:13px}
+  .hright{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  .marcas{display:flex;gap:8px}
+  .marcas img{height:30px;border-radius:7px;display:block}
+  .live{display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:13px;background:rgba(255,255,255,.14);padding:5px 10px;border-radius:99px}
+  @media (max-width:640px){.hright{align-items:flex-start}.brand .free{height:36px}.brand .r{height:38px;width:38px}.brand b{font-size:18px}}
+  .foot{max-width:1280px;margin:0 auto;padding:4px 16px 32px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12.5px}
+  .foot img{height:30px}
+  .live i{width:8px;height:8px;border-radius:50%;background:#7db843;box-shadow:0 0 0 0 rgba(29,122,70,.5);animation:p 2s infinite}
+  .live.off i{background:var(--muted);animation:none}
+  @keyframes p{70%{box-shadow:0 0 0 8px rgba(29,122,70,0)}100%{box-shadow:0 0 0 0 rgba(29,122,70,0)}}
+  .filters{max-width:1280px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px;flex-wrap:wrap}
+  .seg button{border:0;background:none;font:inherit;padding:7px 12px;border-radius:7px;color:var(--ink2);cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff}
+  select,input[type=date],input[type=search]{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  .sp{flex:1}
+  .tbtn{font:inherit;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+  main{max-width:1280px;margin:0 auto;padding:12px 16px 40px}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:12px}
+  @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi .v{font-size:24px}}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .l{color:var(--ink2);font-size:13px}
+  .kpi .v{font-size:30px;font-weight:750;letter-spacing:-.02em;line-height:1.15;margin-top:4px}
+  .kpi .v small{font-size:15px;color:var(--muted);font-weight:600}
+  .kpi .s{color:var(--muted);font-size:12.5px;margin-top:4px}
+  .kpi .bar{height:6px;background:var(--grid);border-radius:99px;margin-top:8px;overflow:hidden}
+  .kpi .bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+  @media (max-width:900px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;min-width:0}
+  .card h2{font-size:15px;margin:0 0 2px}
+  .card .sub{color:var(--muted);font-size:12.5px;margin-bottom:12px}
+  .chart{position:relative;height:260px}
+  .tw{overflow-x:auto}
+  .scroll{max-height:440px;overflow:auto}
+  @media print{.scroll{max-height:none;overflow:visible}}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-weight:600;color:var(--ink2);font-size:12px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid var(--grid);vertical-align:middle}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  tfoot td{font-weight:700;border-top:1px solid var(--line)}
+  .mini{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .mini .b{width:70px;height:6px;background:var(--grid);border-radius:99px;overflow:hidden}
+  .mini .b i{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:99px;white-space:nowrap}
+  .st.ok{background:var(--ok-soft);color:var(--ok)} .st.warn{background:var(--warn-soft);color:var(--warn)} .st.err{background:var(--err-soft);color:var(--err)} .st.na{background:var(--grid);color:var(--ink2)}
+  .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .ph{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fafaf8;cursor:pointer;text-align:left;padding:0;font:inherit;color:inherit}
+  .ph img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--grid)}
+  .ph div{padding:8px 10px;font-size:12px;color:var(--ink2)}
+  .ph b{color:var(--ink);font-size:12.5px;display:block}
+  .empty{color:var(--muted);padding:16px 0;text-align:center}
+  .inc{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--grid)}
+  .inc:last-child{border-bottom:0}
+  .inc .t{color:var(--muted);font-size:12px;white-space:nowrap;min-width:84px}
+  .login{position:fixed;inset:0;z-index:30;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
+  .lbox{width:100%;max-width:400px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 20px 50px rgba(11,31,77,.15)}
+  .ltop{background:var(--accent);color:#fff;padding:24px 24px 22px;position:relative;overflow:hidden}
+  .ltop::before{content:"";position:absolute;right:-40px;top:-50px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .ltop::after{content:"";position:absolute;right:80px;bottom:-24px;width:50px;height:50px;border-radius:50%;background:#7db843}
+  .ltop .logos{display:flex;align-items:center;gap:12px;margin-bottom:16px;position:relative}
+  .ltop .logos .free{height:42px} .ltop .logos .r{height:46px;width:46px;border-radius:11px} .ltop .logos .sep{width:1px;height:38px;background:rgba(255,255,255,.4)}
+  .ltop .kick{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:600;position:relative}
+  .ltop h1{margin:2px 0 4px;font-size:26px;font-weight:800;position:relative}
+  .ltop p{margin:0;opacity:.9;position:relative}
+  .ltop .marcas{margin-top:14px;position:relative}
+  .lform{padding:20px 24px 24px}
+  .lform label{display:block;font-weight:600;font-size:13px;margin:12px 0 6px;color:var(--ink2)}
+  .lform input{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid #cfd3ea;border-radius:10px}
+  .lform input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+  .lform button{width:100%;margin-top:18px;border:0;border-radius:12px;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:16px;padding:13px;cursor:pointer}
+  .lform button:disabled{opacity:.6}
+  .lerr{background:var(--err-soft);color:var(--err);padding:10px 12px;border-radius:10px;margin-top:12px;font-size:13.5px}
+  .salir{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+  .modal{position:fixed;inset:0;background:rgba(20,20,22,.6);display:grid;place-items:center;z-index:20;padding:16px}
+  .modal[hidden]{display:none}
+  .mbox{background:#fff;border-radius:16px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:18px}
+  .mbox .imgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:12px}
+  .mbox .imgs a{display:block;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .mbox .imgs img{display:block;width:100%;height:220px;object-fit:contain;background:#f2f2ef}
+  .mbox .imgs span{display:block;padding:6px 10px;font-size:12px;color:var(--ink2)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+  .kv dt{color:var(--muted)}
+  .kv dd{margin:0}
+  .err-banner{background:var(--err-soft);color:var(--err);padding:10px 16px;text-align:center}
+  .demo-banner{background:var(--warn-soft);color:var(--warn);padding:8px 16px;text-align:center;font-size:13px}
+  .print-only{display:none}
+  .badge-int{display:inline-block;background:#7db843;color:#0b1f4d;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:3px 9px;margin-left:8px;vertical-align:2px}
+  .valbox{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#f7f8fd}
+  .valbox .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .valbox button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:9px 14px;cursor:pointer}
+  .valbox .bok{background:var(--ok);color:#fff} .valbox .bobs{background:var(--err);color:#fff} .valbox .bpen{background:#fff;border:1px solid var(--line);color:var(--ink2)}
+  .valbox label.cl{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin-top:10px}
+  .valbox label.cl input{font-weight:400}
+  .valbox input[type=file]{border:0;padding:6px 0;background:transparent}
+  .valbox input{font:inherit;width:100%;padding:9px 10px;border:1px solid #cfd3ea;border-radius:10px;margin-top:8px}
+  body.cliente .solo-int{display:none!important}
+  table.efe th,table.efe td{text-align:center;white-space:nowrap}
+  table.efe th:first-child,table.efe td:first-child{text-align:left}
+  table.efe td.pc{font-weight:700;color:#1c1c1e}
+  .pkpis{display:flex;flex-wrap:wrap;gap:10px 28px;margin:4px 0 14px}
+  .pkpis div{font-size:12.5px;color:var(--muted)} .pkpis b{display:block;font-size:22px;color:var(--ink)}
+  table.proy thead tr:first-child th{font-size:11px;letter-spacing:.04em;padding-bottom:4px}
+  table.efe th.g1{background:#e8eefb;color:#2c3e8f} table.efe th.g2{background:#efe8f8;color:#5b3f8f}
+  table.efe td.sep,table.efe th.sep{border-left:1px solid var(--line)}
+  table.efe thead tr:first-child th{font-size:11px;letter-spacing:.04em;padding-bottom:4px}
+  table.proy th.g1{background:#e8eefb;color:#2c3e8f} table.proy th.g2{background:#efe8f8;color:#5b3f8f} table.proy th.g3{background:#fdeee2;color:#9a4f12}
+  table.proy td.sep,table.proy th.sep{border-left:1px solid var(--line)}
+  table.proy .mini{justify-content:center} table.proy .mini .b{width:50px}
+  table.proy thead tr:last-child th{white-space:normal;line-height:1.25;max-width:96px;vertical-align:bottom}
+  table.proy td,table.proy th{padding-left:8px;padding-right:8px}
+  table.stk td{vertical-align:top}
+  table.stk .sk{display:inline-block;min-width:44px;font-weight:700;font-size:15px;padding:3px 8px;border-radius:8px;background:var(--ok-soft);color:var(--ok)}
+  table.stk .sk.bajo{background:var(--warn-soft);color:var(--warn)} table.stk .sk.q{background:var(--err-soft);color:var(--err);font-size:12px}
+  table.stk .sk.na{background:transparent;color:var(--muted);font-weight:500;font-size:12px}
+  table.stk small{display:block;color:var(--muted);font-size:11.5px;margin-top:3px;font-weight:500}
+  table.stk td.mot{white-space:normal;text-align:left;min-width:180px;max-width:280px;font-size:12.5px;color:var(--ink2)}
+  @media print{
+    body{background:#fff}
+    .filters,.noprint,.live{display:none!important}
+    .print-only{display:block}
+    .card,.kpi{break-inside:avoid;border-color:#ccc}
+    header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .gal{grid-template-columns:repeat(4,1fr)}
+  }
+</style>
+</head>
+<body>
+<div id="banner"></div>
+<header>
+  <div class="hwrap">
+    <div class="brand"><img class="free" src="img/free-blanco.png" alt="Free Marketing"><span class="sep"></span><img class="r" src="img/rinti-r.png" alt="Rinti">
+      <div class="tt"><div class="kick">Rinti × Free</div><b><span id="tCampana">Canje Rinti</span><span class="badge-int solo-int">Interno Free</span></b><span>Seguimiento de impulsadoras en mercados</span></div></div>
+    <div class="hright"><div class="marcas"><img src="img/ricocan.png" alt="Ricocan"><img src="img/ricocat.png" alt="Ricocat"></div>
+      <div style="display:flex;gap:8px;align-items:center"><div class="live" id="live"><i></i><span id="liveTxt">Cargando…</span></div><button class="salir noprint" id="btnSalir" hidden>Salir</button></div></div>
+  </div>
+</header>
+<div class="filters">
+  <div class="seg" id="fPeriodo">
+    <button data-p="hoy">Hoy</button><button data-p="ayer">Ayer</button><button data-p="7d">7 días</button><button data-p="camp" class="on">Toda la campaña</button><button data-p="rango">Rango</button>
+  </div>
+  <span id="fRango" hidden><input type="date" id="fDesde"> – <input type="date" id="fHasta"></span>
+  <select id="fMercado"><option value="">Todos los mercados</option></select>
+  <span class="sp"></span>
+  <button class="tbtn" id="btnCsv">Descargar Excel (CSV)</button>
+  <button class="tbtn" id="btnPrint">Imprimir / PDF</button>
+</div>
+
+<main>
+  <p class="print-only" id="printHdr"></p>
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>Canjes por día</h2>
+      <div class="sub">Barras: canjes realizados · línea punteada: meta diaria</div>
+      <div class="chart"><canvas id="chDia"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Canjes por hora</h2>
+      <div class="sub">En qué horas se concentran los canjes</div>
+      <div class="chart"><canvas id="chHora"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card" id="secEfectivos">
+    <h2>Canjes efectivos</h2>
+    <div class="sub" id="subEfectivos"></div>
+    <div class="tw"><table id="tEfectivos" class="efe"></table></div>
+  </section>
+
+  <section class="card" id="secProy">
+    <h2>Proyectado de la campaña</h2>
+    <div class="sub" id="subProy"></div>
+    <div class="pkpis" id="kProy"></div>
+    <div class="tw"><table id="tProy" class="efe proy"></table></div>
+  </section>
+
+  <section class="card">
+    <h2 id="tituloEquipo">Equipo en campo · hoy</h2>
+    <div class="sub" id="subEquipo">Asistencia y avance de cada impulsadora contra la meta del día</div>
+    <div class="tw"><table id="tEquipo"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Resultados por mercado</h2>
+    <div class="sub" id="subMercado"></div>
+    <div class="tw"><table id="tMercado"></table></div>
+  </section>
+
+  <section class="card" id="secStock" hidden>
+    <h2>Stock en puntos de venta</h2>
+    <div class="sub" id="subStock"></div>
+    <div class="pkpis" id="kStock"></div>
+    <div class="tw"><table id="tStock" class="efe stk"></table></div>
+  </section>
+
+  <section class="grid2" id="secCuadre">
+    <div class="card">
+      <h2>Kardex de vales físicos</h2>
+      <div class="sub" id="subCuadre"></div>
+      <div class="tw scroll"><table id="tCuadre"></table></div>
+    </div>
+    <div class="card solo-int">
+      <h2>Incidencias y observaciones</h2>
+      <div class="sub" id="subInc"></div>
+      <div id="lInc" class="scroll"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Evidencia fotográfica</h2>
+    <div class="sub">Cliente recibiendo el vale. Toca una foto para ver la boleta, la firma y los datos del canje.</div>
+    <div class="gal" id="gal"></div>
+    <div style="text-align:center;margin-top:12px" class="noprint"><button class="tbtn" id="btnMas" hidden>Ver más fotos</button></div>
+  </section>
+
+  <section class="card">
+    <h2>Detalle de pedidos y canjes</h2>
+    <div class="sub noprint"><input type="search" id="fBuscar" placeholder="Buscar por código de vale, cliente, boleta o impulsadora" style="width:min(420px,100%)"></div>
+    <div class="tw"><table id="tDetalle"></table></div>
+  </section>
+</main>
+<footer class="foot"><img src="img/free-azul.png" alt="Free Marketing"><span>Reporte elaborado por Free Marketing para Rinti · Canje Ricocan &amp; Ricocat</span></footer>
+
+<div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+
+<div class="login" id="login" hidden>
+  <form class="lbox" id="loginForm" autocomplete="on">
+    <div class="ltop">
+      <div class="logos"><img class="free" src="img/free-blanco.png" alt="Free Marketing"><span class="sep"></span><img class="r" src="img/rinti-r.png" alt="Rinti"></div>
+      <div class="kick">Rinti × Free</div>
+      <h1>Canje Rinti<span class="badge-int solo-int">Interno Free</span></h1>
+      <p id="lSub">Seguimiento en vivo de la campaña</p>
+      <div class="marcas"><img src="img/ricocan.png" alt="Ricocan"><img src="img/ricocat.png" alt="Ricocat"></div>
+    </div>
+    <div class="lform">
+      <label for="gUsuario">Usuario</label>
+      <input id="gUsuario" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label for="gClave">Contraseña</label>
+      <input id="gClave" type="password" autocomplete="current-password">
+      <div class="lerr" id="gErr" hidden></div>
+      <button type="submit" id="gBtn">Ingresar</button>
+      <a href="./" style="display:block;text-align:center;margin-top:14px;color:var(--muted);font-size:13px">← Volver al inicio</a>
+    </div>
+  </form>
+</div>
+
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+const C = window.RINTI;
+const qs = new URLSearchParams(location.search);
+const API = (C.API_URL || '').trim();
+const DEMO = !API || qs.get('demo') === '1';
+// Dos dashboards con el mismo código: el del cliente (Rinti) y el interno de Free.
+const INTERNO = qs.has('interno') || /interno/.test(location.pathname);
+document.body.classList.add(INTERNO ? 'interno' : 'cliente');
+const CI_KEY = 'rinti:ci';
+let CI = (() => { try { return JSON.parse(localStorage.getItem(CI_KEY) || 'null'); } catch { return null; } })();
+const guardarCI = v => { try { v ? localStorage.setItem(CI_KEY, JSON.stringify(v)) : localStorage.removeItem(CI_KEY); } catch {} };
+const postAPI = b => fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(b) }).then(r => r.json());
+if (INTERNO) document.title = 'Canje Rinti · Interno Free';
+const guardarK = v => { try { v ? localStorage.setItem('rinti:k', v) : localStorage.removeItem('rinti:k'); } catch {} };
+let K = qs.get('k') || (() => { try { return localStorage.getItem('rinti:k') || ''; } catch { return ''; } })();
+if (qs.get('k')) { guardarK(K); history.replaceState(null, '', location.pathname); } // no dejar la clave visible en el link
+
+/* ---------- login del cliente ---------- */
+// En el modo cliente nunca se muestran incidencias ni observaciones (también en los datos de ejemplo).
+function paraModo(d) {
+  if (INTERNO) return d;
+  d.incidencias = [];
+  d.pedidos.forEach(p => { delete p.observaciones; delete p.alertas; delete p.celular; });
+  return d;
+}
+function mostrarLogin(msg) {
+  if (INTERNO) $('#lSub').textContent = 'Dashboard interno · ingresa con tu usuario de supervisor o coordinador';
+  $('#login').hidden = false; $('#btnSalir').hidden = true;
+  $('#gErr').textContent = msg || ''; $('#gErr').hidden = !msg;
+  setTimeout(() => $('#gUsuario').focus(), 50);
+}
+async function ingresar(ev) {
+  ev.preventDefault();
+  const usuario = $('#gUsuario').value.trim(), clave = $('#gClave').value;
+  const err = m => { $('#gErr').textContent = m; $('#gErr').hidden = !m; };
+  if (!usuario || !clave) return err('Escribe tu usuario y contraseña');
+  err(''); $('#gBtn').disabled = true; $('#gBtn').textContent = 'Ingresando…';
+  try {
+    if (INTERNO) {
+      const r = await postAPI({ tipo: 'datos_interno', usuario, clave });
+      if (!r.ok) return err(r.error || 'No se pudo ingresar');
+      CI = { usuario, clave }; guardarCI(CI); $('#gClave').value = '';
+      await cargar(r); return;
+    }
+    const r = await postAPI({ tipo: 'login_cliente', usuario, clave });
+    if (!r.ok) return err(r.error || 'No se pudo ingresar');
+    K = r.k; guardarK(K); $('#gClave').value = '';
+    await cargar();
+  } catch { err('Sin conexión. Intenta de nuevo.'); }
+  finally { $('#gBtn').disabled = false; $('#gBtn').textContent = 'Ingresar'; }
+}
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const x = Number(String(v).replace(',', '.')); return isFinite(x) ? x : 0; };
+const fmt = n => Math.round(n).toLocaleString('es-PE');
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+const fmtProm = n => (Math.round(n * 10) / 10).toLocaleString('es-PE');
+const addDias = (f, d) => { const x = new Date(f + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + d); return x.toISOString().slice(0, 10); };
+// Días de trabajo (lunes a sábado). Un domingo cuenta solo si hubo canjes ese día.
+const esDomingo = f => new Date(f + 'T12:00:00Z').getUTCDay() === 0;
+const diasHabiles = (ini, fin, conCanje) => { const r = []; for (let f = ini; f <= fin; f = addDias(f, 1)) if (!esDomingo(f) || (conCanje && conCanje.has(f))) r.push(f); return r; };
+const fCorta = f => { const [y, m, d] = f.split('-'); return `${d}/${m}`; };
+const driveId = u => (String(u).match(/\/d\/([^/]+)/) || [])[1];
+const thumb = (u, w = 400) => !u ? '' : u.startsWith('data:') ? u : driveId(u) ? `https://drive.google.com/thumbnail?id=${driveId(u)}&sz=w${w}` : u;
+
+let D = null;               // datos crudos
+const F = { p: 'camp', desde: '', hasta: '', mercado: '', buscar: '' };
+let galN = 24;
+
+/* ---------- carga ---------- */
+async function cargar(pre) {
+  try {
+    if (DEMO) { D = D || paraModo(demo()); }
+    else {
+      let r = pre;
+      if (!r && INTERNO) {
+        if (!CI) { mostrarLogin(); return; }
+        r = await postAPI({ tipo: 'datos_interno', usuario: CI.usuario, clave: CI.clave });
+        if (!r.ok && r.code === 'auth') { CI = null; guardarCI(null); D = null; mostrarLogin(r.error || 'Vuelve a ingresar.'); return; }
+      } else if (!r) {
+        if (!K) { mostrarLogin(); return; }
+        r = await fetch(`${API}?action=data&k=${encodeURIComponent(K)}`).then(r => r.json());
+      }
+      if (!r.ok && r.code === 'auth') { K = ''; guardarK(''); D = null; mostrarLogin('Tu sesión venció. Vuelve a ingresar.'); return; }
+      if (!r.ok) throw new Error(r.error || 'No se pudo cargar');
+      D = r;
+      $('#login').hidden = true; $('#btnSalir').hidden = false;
+    }
+    normalizar(); pintar();
+    $('#live').classList.remove('off');
+    $('#liveTxt').textContent = 'En vivo · actualizado ' + new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    $('#banner').innerHTML = DEMO ? '<div class="demo-banner">Vista de ejemplo con datos ficticios. Con la base conectada se ven los datos reales.</div>' : '';
+  } catch (e) {
+    $('#live').classList.add('off'); $('#liveTxt').textContent = 'Sin conexión, reintentando…';
+    if (!D) $('#banner').innerHTML = `<div class="err-banner">${esc(e.message)}</div>`;
+  }
+}
+
+function normalizar() {
+  const cfg = D.config || {};
+  D.meta = num(cfg.meta_diaria_por_impulsadora) || C.META_DIARIA;
+  D.plan = num(cfg.impulsadoras_planificadas) || C.IMPULSADORAS_PLANIFICADAS;
+  D.horaIngreso = cfg.hora_ingreso || '09:00';
+  D.reglas = Object.assign({}, C.SACOS_POR_MERCADO, D.sacos_por_mercado || {});
+  D.inicio = cfg.fecha_inicio || '';
+  D.fin = cfg.fecha_fin || '';
+  // Lo anterior a la fecha de inicio fueron pruebas: se oculta en el dashboard (sigue en el Sheet)
+  D.stock = D.stock || [];
+  if (D.inicio) ['pedidos', 'asistencia', 'incidencias', 'cierres', 'stock'].forEach(k => { D[k] = (D[k] || []).filter(r => !r.fecha || r.fecha >= D.inicio); });
+  D.pedidos.forEach(p => {
+    p._rc = num(p.sacos_ricocan); p._rt = num(p.sacos_ricocat); p._tot = p._rc + p._rt;
+    p._rc15 = num(p.sacos_ricocan_15kg); p._rt9 = num(p.sacos_ricocat_9kg); // detalle: parte de _rc / _rt
+    p._kg = num(p.kg_total) || p._rc * C.KG.ricocan + p._rt * C.KG.ricocat;
+    p._vales = num(p.vales); p._canje = p.es_canje === 'SÍ' || p._vales > 0;
+    p._cumple = p._canje && p.cumple_mecanica === 'SÍ' && p.validacion !== 'Observado';
+  });
+  D.cierres.forEach(c => { c._ini = num(c.pavos_inicio); c._ent = num(c.pavos_entregados); c._vr = num(c.vales_reportados); });
+  const merc = new Set(C.MERCADOS);
+  [...D.pedidos, ...D.asistencia].forEach(r => r.mercado && merc.add(r.mercado));
+  D.mercados = [...merc];
+  const sel = $('#fMercado'), cur = sel.value;
+  sel.innerHTML = '<option value="">Todos los mercados</option>' + D.mercados.map(m => `<option${m === cur ? ' selected' : ''}>${esc(m)}</option>`).join('');
+  $('#tCampana').textContent = C.CAMPANA;
+}
+
+/* ---------- filtros ---------- */
+function rango() {
+  const h = hoy();
+  const todas = [...D.pedidos, ...D.asistencia].map(r => r.fecha).filter(Boolean).sort();
+  const ini = D.inicio || todas[0] || h;
+  const finCamp = D.fin && D.fin < h ? D.fin : h;
+  switch (F.p) {
+    case 'hoy': return [h, h];
+    case 'ayer': { const a = addDias(h, -1); return [a, a]; }
+    case '7d': return [addDias(h, -6), h];
+    case 'camp': return [ini, finCamp];
+    case 'rango': return [F.desde || ini, F.hasta || finCamp];
+  }
+}
+function filtrar(rows, campoM = 'mercado') {
+  const [a, b] = rango();
+  return rows.filter(r => r.fecha >= a && r.fecha <= b && (!F.mercado || r[campoM] === F.mercado));
+}
+// Días de operación del periodo: días con actividad + hoy si está en el rango
+function diasOperacion() {
+  const [a, b] = rango(), h = hoy(), s = new Set();
+  [...D.pedidos, ...D.asistencia].forEach(r => { if (r.fecha >= a && r.fecha <= b) s.add(r.fecha); });
+  if (h >= a && h <= b) s.add(h);
+  if (!s.size) s.add(b);
+  return [...s].sort();
+}
+function impulsadorasPorMercado(m) {
+  const n = (D.equipo || []).filter(e => e.rol === 'impulsadora' && e.mercado === m).length;
+  return n || 1;
+}
+
+/* ---------- pintar ---------- */
+function pintar() {
+  const P = filtrar(D.pedidos), A = filtrar(D.asistencia), I = filtrar(D.incidencias), CIE = filtrar(D.cierres);
+  const dias = diasOperacion();
+  const imp = F.mercado ? impulsadorasPorMercado(F.mercado) : D.plan;
+  const meta = D.meta * imp * dias.length;
+  const canjes = P.filter(p => p._canje);
+  const vales = canjes.reduce((s, p) => s + p._vales, 0);
+  const rc = P.reduce((s, p) => s + p._rc, 0), rt = P.reduce((s, p) => s + p._rt, 0), kg = P.reduce((s, p) => s + p._kg, 0);
+  const cumple = canjes.filter(p => p._cumple).length;
+  const obs = canjes.filter(p => p.validacion === 'Observado').length;
+  const jornadas = new Set(A.filter(a => a.marca === 'Entrada').map(a => a.fecha + '|' + a.impulsadora)).size;
+  const esperadas = imp * dias.length;
+  const tard = A.filter(a => a.marca === 'Entrada' && tarde(a.hora)).length;
+  const [ra, rb] = rango();
+  $('#printHdr').textContent = `Reporte ${ra === rb ? fCorta(ra) : fCorta(ra) + ' al ' + fCorta(rb)} · ${F.mercado || 'Todos los mercados'} · generado ${new Date().toLocaleString('es-PE')}`;
+
+  $('#kpis').innerHTML = [
+    kpi('Canjes realizados', fmt(canjes.length), dias.length > 1 ? `· ${fmtProm(canjes.length / dias.length)} por día` : `/ ${fmt(D.meta * imp)}`, `${pct(canjes.length, meta)}% de la meta diaria (${D.meta} por impulsadora al día = ${fmt(D.meta * imp)} por día)`, pct(canjes.length, meta)),
+    kpi('Vales entregados', fmt(vales), '', `1 vale = 1 pavo Redondos de 7 kg · máx. 1 por DNI al día`),
+    kpi('Pedidos generados', fmt(P.length), '', `${pct(canjes.length, P.length)}% llegaron a los sacos del canje`),
+    kpi('Sacos comprados', fmt(rc + rt), '', `Ricocan ${fmt(rc)} · Ricocat ${fmt(rt)} · ${fmt(kg)} kg`),
+    kpi('Cumplimiento de mecánica', canjes.length ? pct(cumple, canjes.length) + '%' : '—', '', `${fmt(cumple)} de ${fmt(canjes.length)} canjes con boleta, registro, firma y foto${obs ? ` · ${obs} observados` : ''}`, canjes.length ? pct(cumple, canjes.length) : null),
+    kpi('Asistencia', esperadas ? pct(jornadas, esperadas) + '%' : '—', '', `${fmt(jornadas)} de ${fmt(esperadas)} jornadas` + (INTERNO ? ` · ${tard} tardanza${tard === 1 ? '' : 's'}` : ''), pct(jornadas, esperadas)),
+    ...(INTERNO ? [kpi('Por validar', fmt(canjes.filter(p => !p.validacion || p.validacion === 'Pendiente').length), '', `canjes sin revisar · ${fmt(canjes.filter(p => p.validacion === 'Válido').length)} válidos · ${fmt(obs)} observados`)] : []),
+  ].join('');
+
+  tablaEfectivos();
+  tablaProyectado();
+  graficoDia(P, dias, imp);
+  graficoHora(canjes);
+  tablaEquipo(P, A, dias);
+  tablaMercado(P, A, I, dias);
+  tablaCuadre();
+  if (INTERNO) listaInc(I, P);
+  $('#secCuadre').style.gridTemplateColumns = INTERNO ? '' : '1fr';
+  galeria(canjes);
+  tablaDetalle(P);
+}
+function tarde(h) {
+  if (!h) return false;
+  const [a, b] = D.horaIngreso.split(':').map(Number), [c, d] = h.split(':').map(Number);
+  return c * 60 + d > a * 60 + b + 10;
+}
+function kpi(l, v, small, s, bar) {
+  return `<div class="kpi"><div class="l">${l}</div><div class="v">${v} ${small ? `<small>${small}</small>` : ''}</div><div class="s">${s}</div>${bar != null ? `<div class="bar"><i style="width:${Math.min(100, bar)}%"></i></div>` : ''}</div>`;
+}
+
+/* ---------- gráficos ---------- */
+Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+Chart.defaults.color = '#55565b';
+const charts = {};
+const tooltip = { backgroundColor: '#1c1c1e', padding: 10, cornerRadius: 8, displayColors: false, titleFont: { weight: '600' } };
+function chart(id, cfg) { if (charts[id]) { charts[id].data = cfg.data; charts[id].options = cfg.options; charts[id].update('none'); } else charts[id] = new Chart(document.getElementById(id), cfg); }
+function ejes(stepY) {
+  return {
+    x: { grid: { display: false }, border: { color: '#e6e6e3' }, ticks: { maxRotation: 0, autoSkip: true } },
+    y: { beginAtZero: true, grid: { color: '#ececea' }, border: { display: false }, ticks: { precision: 0, stepSize: stepY } },
+  };
+}
+function graficoDia(P, dias, imp) {
+  // Hoy / Ayer: se muestran los 7 días previos para dar contexto
+  let fechas = dias, fuente = P;
+  if (dias.length === 1) {
+    const fin = dias[0];
+    fechas = Array.from({ length: 7 }, (_, i) => addDias(fin, i - 6)).filter(f => !D.inicio || f >= D.inicio);
+    fuente = D.pedidos.filter(p => !F.mercado || p.mercado === F.mercado);
+  }
+  const porDia = Object.fromEntries(fechas.map(f => [f, 0]));
+  fuente.filter(p => p._canje).forEach(p => { if (p.fecha in porDia) porDia[p.fecha]++; });
+  const metaDia = D.meta * imp;
+  chart('chDia', {
+    type: 'bar',
+    data: {
+      labels: fechas.map(fCorta),
+      datasets: [
+        { type: 'bar', label: 'Canjes', data: fechas.map(f => porDia[f]), backgroundColor: '#3b47e0', hoverBackgroundColor: '#2a34b8', borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: 'bottom', maxBarThickness: 24, order: 2 },
+        { type: 'line', label: 'Meta', data: fechas.map(() => metaDia), borderColor: '#86878c', borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, pointHoverRadius: 0, order: 1 },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { ...tooltip, callbacks: { label: c => c.dataset.label === 'Meta' ? `Meta: ${c.raw}` : `Canjes: ${c.raw} (${pct(c.raw, metaDia)}%)` } } },
+      scales: ejes(),
+    },
+  });
+}
+function graficoHora(canjes) {
+  const horas = Array.from({ length: 13 }, (_, i) => i + 7); // 7:00 a 19:00
+  const cnt = Object.fromEntries(horas.map(h => [h, 0]));
+  canjes.forEach(p => { const h = parseInt(p.hora, 10); if (h in cnt) cnt[h]++; else if (h < 7) cnt[7]++; else if (h > 19) cnt[19]++; });
+  chart('chHora', {
+    type: 'bar',
+    data: { labels: horas.map(h => h + 'h'), datasets: [{ label: 'Canjes', data: horas.map(h => cnt[h]), backgroundColor: '#3b47e0', hoverBackgroundColor: '#2a34b8', borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: 'bottom', maxBarThickness: 20 }] },
+    options: { maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }, tooltip: { ...tooltip, callbacks: { title: c => `${horas[c[0].dataIndex]}:00 – ${horas[c[0].dataIndex]}:59`, label: c => `Canjes: ${c.raw}` } } }, scales: ejes() },
+  });
+}
+
+/* ---------- tablas ---------- */
+function semaforo(v, meta) {
+  const p = pct(v, meta);
+  return p >= 100 ? `<span class="st ok">✔ ${p}%</span>` : p >= 60 ? `<span class="st warn">● ${p}%</span>` : `<span class="st err">▼ ${p}%</span>`;
+}
+function tablaEquipo(P, A, dias) {
+  const [a, b] = rango(), unDia = a === b, h = hoy();
+  const eq = (D.equipo || []).filter(e => e.rol === 'impulsadora' && (!F.mercado || e.mercado === F.mercado));
+  const jefes = (D.equipo || []).filter(e => e.rol !== 'impulsadora').map(e => e.nombre);
+  const deE = (r, e) => r.impulsadora === e.nombre || (r.mercado === e.mercado && !jefes.includes(r.impulsadora));
+  const cuando = unDia ? (a === h ? 'hoy' : 'el ' + fCorta(a)) : `del ${fCorta(a)} al ${fCorta(b)}`;
+  $('#tituloEquipo').textContent = 'Equipo en campo · ' + cuando;
+  if (!INTERNO) {
+    const diasDe = e => new Set(A.filter(x => x.marca === 'Entrada' && deE(x, e)).map(x => x.fecha)).size;
+    const act = eq.filter(e => diasDe(e) > 0).length;
+    $('#subEquipo').textContent = unDia ? `${act} de ${eq.length} impulsadoras activas ${cuando}` : `Días trabajados de cada impulsadora ${cuando} (${dias.length} días de operación)`;
+    $('#tEquipo').innerHTML = `<thead><tr><th>Impulsadora</th><th>Mercado</th><th>${unDia ? 'Estado' : 'Días activa'}</th></tr></thead><tbody>${eq.map(e => `<tr><td><b>${esc(e.nombre)}</b></td><td>${esc(e.mercado)}</td>
+      <td>${unDia ? (diasDe(e) ? '<span class="st ok">● Activa</span>' : '<span class="st na">○ Inactiva</span>') : `${diasDe(e)} / ${dias.length}`}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Sin impulsadoras registradas</td></tr>'}</tbody>`;
+    return;
+  }
+  $('#subEquipo').textContent = unDia ? `Asistencia y avance de cada impulsadora contra la meta del día (${cuando})` : `Asistencia y avance de cada impulsadora ${cuando} · meta = ${D.meta} por día × ${dias.length} días de operación`;
+  if (unDia) {
+    const rows = eq.map(e => {
+      const ent = A.find(x => x.impulsadora === e.nombre && x.marca === 'Entrada');
+      const sal = A.filter(x => x.impulsadora === e.nombre && x.marca === 'Salida').pop();
+      const mis = P.filter(p => p.impulsadora === e.nombre), cj = mis.filter(p => p._canje).length;
+      return `<tr><td><b>${esc(e.nombre)}</b></td><td>${esc(ent ? ent.mercado : e.mercado)}</td>
+        <td>${ent ? `<span class="st ${tarde(ent.hora) ? 'warn' : 'ok'}">${tarde(ent.hora) ? '● Tarde' : '✔'} ${esc(ent.hora)}</span>` : '<span class="st err">✕ Sin marcar</span>'}</td>
+        <td>${sal ? esc(sal.hora) : '<span style="color:var(--muted)">—</span>'}</td>
+        <td class="n">${mis.length}</td><td class="n"><b>${cj}</b> / ${D.meta}</td><td class="n">${semaforo(cj, D.meta)}</td></tr>`;
+    });
+    $('#tEquipo').innerHTML = `<thead><tr><th>Impulsadora</th><th>Mercado</th><th>Entrada</th><th>Salida</th><th class="n">Pedidos</th><th class="n">Canjes</th><th class="n">Avance</th></tr></thead>
+      <tbody>${rows.join('') || '<tr><td colspan="7" class="empty">Sin impulsadoras registradas</td></tr>'}</tbody>`;
+    return;
+  }
+  const rows = eq.map(e => {
+    const ents = A.filter(x => x.impulsadora === e.nombre && x.marca === 'Entrada');
+    const dTrab = new Set(ents.map(x => x.fecha)).size, tard = ents.filter(x => tarde(x.hora)).length;
+    const mis = P.filter(p => p.impulsadora === e.nombre), cj = mis.filter(p => p._canje).length, meta = D.meta * dias.length;
+    return `<tr><td><b>${esc(e.nombre)}</b></td><td>${esc(e.mercado)}</td><td class="n">${dTrab} / ${dias.length}</td>
+      <td class="n">${tard || '<span style="color:var(--muted)">0</span>'}</td><td class="n">${mis.length}</td><td class="n"><b>${cj}</b> / ${meta}</td><td class="n">${semaforo(cj, meta)}</td></tr>`;
+  });
+  $('#tEquipo').innerHTML = `<thead><tr><th>Impulsadora</th><th>Mercado</th><th class="n">Días trabajados</th><th class="n">Tardanzas</th><th class="n">Pedidos</th><th class="n">Canjes</th><th class="n">Avance</th></tr></thead>
+    <tbody>${rows.join('') || '<tr><td colspan="7" class="empty">Sin impulsadoras registradas</td></tr>'}</tbody>`;
+}
+function tablaMercado(P, A, I, dias) {
+  const mercados = F.mercado ? [F.mercado] : D.mercados;
+  const tot = { ped: 0, rc: 0, rt: 0, cj: 0, v: 0, meta: 0, jor: 0, esp: 0, inc: 0 };
+  const rows = mercados.map(m => {
+    const p = P.filter(x => x.mercado === m), cj = p.filter(x => x._canje);
+    const imp = impulsadorasPorMercado(m);
+    const r = {
+      ped: p.length, rc: p.reduce((s, x) => s + x._rc, 0), rt: p.reduce((s, x) => s + x._rt, 0),
+      cj: cj.length, v: cj.reduce((s, x) => s + x._vales, 0), meta: D.meta * imp,
+      jor: new Set(A.filter(a => a.mercado === m && a.marca === 'Entrada').map(a => a.fecha + a.impulsadora)).size, esp: imp * dias.length,
+      inc: I.filter(x => x.mercado === m).length,
+    };
+    for (const k in tot) tot[k] += r[k];
+    const nombres = [...new Set([...(D.equipo || []).filter(e => e.mercado === m && e.rol === 'impulsadora').map(e => e.nombre)])].join(', ');
+    return { av: r.cj / (r.meta * dias.length || 1), cj: r.cj, html: fila(m, nombres, r) };
+  }).sort((x, y) => y.av - x.av || y.cj - x.cj).map(x => x.html);
+  function fila(m, nombres, r, foot) {
+    const p = pct(r.cj, r.meta * dias.length);
+    const req = D.reglas[m];
+    return `<tr><td><b>${esc(m)}</b>${nombres ? `<div style="color:var(--muted);font-size:12px">${esc(nombres)}</div>` : ''}</td>
+      <td class="n">${req ? req : ''}</td><td class="n">${r.jor} / ${r.esp}</td><td class="n">${fmt(r.ped)}</td><td class="n">${fmt(r.rc)}</td><td class="n">${fmt(r.rt)}</td>
+      <td class="n"><b>${fmt(r.cj)}</b></td>${dias.length > 1 ? `<td class="n">${fmtProm(r.cj / dias.length)}</td>` : ''}<td class="n">${fmt(r.v)}</td><td class="n">${fmt(r.meta)}</td>
+      <td class="n"><div class="mini"><span>${p}%</span><span class="b"><i style="width:${Math.min(100, p)}%"></i></span></div></td>
+      ${INTERNO ? `<td class="n">${r.inc || '<span style="color:var(--muted)">0</span>'}</td>` : ''}</tr>`;
+  }
+  $('#subMercado').textContent = `Meta: ${D.meta} canjes por impulsadora por día` + (dias.length > 1 ? ` · ${dias.length} días de operación: el avance compara el promedio diario con la meta` : '') + ' · ordenado por avance';
+  $('#tMercado').innerHTML = `<thead><tr><th>Mercado</th><th class="n" title="Sacos Ricocan y/o Ricocat para 1 vale">Sacos x vale</th><th class="n">Asistencia</th><th class="n">Pedidos</th><th class="n">Sacos Ricocan</th><th class="n">Sacos Ricocat</th><th class="n">Canjes</th>${dias.length > 1 ? '<th class="n">Prom. / día</th>' : ''}<th class="n">Vales</th><th class="n">Meta diaria</th><th class="n">Avance</th>${INTERNO ? '<th class="n">Incid.</th>' : ''}</tr></thead>
+    <tbody>${rows.join('')}</tbody>${mercados.length > 1 ? `<tfoot>${fila('Total', '', tot)}</tfoot>` : ''}`;
+}
+// Periodo del filtro recortado a la campaña (desde el día 1 efectivo hasta hoy o el cierre).
+function periodoCamp() {
+  const [a, b] = rango(), h = hoy(), ini = C.INICIO_EFECTIVO || D.inicio || h;
+  let fin = b < h ? b : h; if (D.fin && D.fin < fin) fin = D.fin;
+  return { ini, a: a > ini ? a : ini, b: fin };
+}
+const mercadosVista = () => [...ORDEN_EFECTIVOS.filter(m => D.mercados.includes(m)), ...D.mercados.filter(m => !ORDEN_EFECTIVOS.includes(m))].filter(m => !F.mercado || m === F.mercado);
+// Canjes por mercado y día (Día 1 = inicio efectivo), agrupados por semana, en el periodo del filtro.
+// Ordenada de mayor a menor por el acumulado.
+const ORDEN_EFECTIVOS = ['Caquetá', 'Unicachi Norte Minorista', 'Fiori', 'Mercado Productores', 'Huamantanga', 'Unicachi Norte Mayorista', 'Parada', 'Unicachi Sur', 'Ciudad de Dios'];
+function tablaEfectivos() {
+  const { ini, a, b } = periodoCamp();
+  const conCanje = new Set(D.pedidos.filter(p => p._canje).map(p => p.fecha));
+  const todas = diasHabiles(ini, b < ini ? ini : b, conCanje);          // días de campaña hasta el fin del periodo
+  let fechas = todas.filter(f => f >= a && f <= b);
+  if (!fechas.length) fechas = [b >= ini ? b : ini];
+  const nDia = f => todas.indexOf(f) + 1 || 1;
+  const sem = f => Math.floor((new Date(f + 'T12:00:00Z') - new Date(ini + 'T12:00:00Z')) / (7 * 864e5)) + 1;
+  const mercados = mercadosVista();
+  const nD = fechas.length, ult = fechas[nD - 1];
+  const rows = mercados.map(m => {
+    const meta = D.meta * impulsadorasPorMercado(m);
+    const cnt = fechas.map(f => D.pedidos.filter(p => p._canje && p.mercado === m && p.fecha === f).length);
+    const acum = cnt.reduce((x, y) => x + y, 0);
+    return { m, meta, cnt, acum, alc: pct(cnt[nD - 1], meta), acu: pct(acum, meta * nD) };
+  }).sort((x, y) => y.acu - x.acu || y.acum - x.acum);
+  const tMeta = rows.reduce((t, r) => t + r.meta, 0);
+  const tCnt = fechas.map((_, i) => rows.reduce((t, r) => t + r.cnt[i], 0));
+  const tot = { alc: pct(tCnt[nD - 1], tMeta), acu: pct(tCnt.reduce((x, y) => x + y, 0), tMeta * nD) };
+  // Color tipo Excel: rojo el más bajo, verde el más alto de cada columna (100% o más siempre verde)
+  const escala = vals => { const mn = Math.min(...vals), mx = Math.max(...vals); return v => v >= 100 ? 120 : mx === mn ? (v > 0 ? 120 : 0) : (v - mn) / (mx - mn) * 120; };
+  const hA = escala([...rows.map(r => r.alc), tot.alc]), hB = escala([...rows.map(r => r.acu), tot.acu]);
+  const celda = (v, h) => `<td class="pc" style="background:hsl(${Math.round(h(v))},68%,70%)">${v}%</td>`;
+  // Bloques semanales: SEM 1 = días 1 a 6, SEM 2 = días 7 a 12, ...
+  const semanas = []; fechas.forEach((f, i) => { const k = sem(f); if (!semanas.length || semanas[semanas.length - 1].k !== k) semanas.push({ k, n: 0, i }); semanas[semanas.length - 1].n++; });
+  const ini_s = new Set(semanas.map(w => w.i));
+  const sep = i => ini_s.has(i) ? ' class="sep"' : '';
+  $('#subEfectivos').textContent = `Día 1 = ${fCorta(ini)} · periodo: ${fechas.length === 1 ? 'Día ' + nDia(fechas[0]) : `Día ${nDia(fechas[0])} al Día ${nDia(ult)}`}${ult === hoy() ? ' (hoy en curso)' : ''} · Meta: ${D.meta} vales por impulsadora por día · lunes a sábado · ordenado por acumulado`;
+  $('#tEfectivos').innerHTML = `<thead><tr><th></th><th></th>${semanas.map((w, x) => `<th colspan="${w.n}" class="sep g${x % 2 ? 2 : 1}">SEM ${w.k}</th>`).join('')}<th class="sep"></th><th></th></tr>
+    <tr><th>Mercado</th><th>Vales x día</th>${fechas.map((f, i) => `<th${sep(i)} title="${fCorta(f)}">Día ${nDia(f)}<div style="font-weight:400;color:var(--muted);font-size:11px">${fCorta(f)}</div></th>`).join('')}<th class="sep">Alcance día ${nDia(ult)}</th><th>Acumulado</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td><b>${esc(r.m)}</b></td><td>${r.meta}</td>${r.cnt.map((c, i) => `<td${sep(i)}><b>${c}</b></td>`).join('')}${celda(r.alc, hA).replace('<td class="pc"', '<td class="pc sep"')}${celda(r.acu, hB)}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td><td>${tMeta}</td>${tCnt.map((c, i) => `<td${sep(i)}>${c}</td>`).join('')}${celda(tot.alc, hA).replace('<td class="pc"', '<td class="pc sep"')}${celda(tot.acu, hB)}</tr></tfoot>`;
+}
+// Kardex: cuota de vales físicos por mercado (hoja Config, filas cuota_vales_<mercado>) vs vales ya entregados.
+// Es el total de la campaña, no depende de los filtros de fecha.
+// Proyectado: con el ritmo de cada mercado (canjes por día efectivo) se estima cuántos vales se
+// consumirán en toda la campaña y cuántos quedarán sin usar. Total de campaña, no depende de los filtros.
+function tablaProyectado() {
+  const cfg = D.config || {};
+  const ini = D.inicio || C.INICIO_EFECTIVO;
+  const fin = D.fin || ini;
+  const nDias = diasHabiles(ini, fin).length;            // días de campaña (lunes a sábado)
+  const h = hoy(), per = periodoCamp(), desde = per.a, hasta = per.b;
+  const mercados = mercadosVista();
+  const pct1 = (a, b) => b ? (Math.round(a / b * 1000) / 10).toLocaleString('es-PE') + '%' : '—';
+  const rows = mercados.map(m => {
+    const vxd = D.meta * impulsadorasPorMercado(m);
+    const cuota = num(cfg['cuota_vales_' + m]) || vxd * nDias;
+    const cj = D.pedidos.filter(p => p._canje && p.mercado === m && p.fecha >= desde && p.fecha <= hasta);
+    // Días efectivos: días que el mercado trabajó (marcó entrada o hizo canjes). El promedio usa solo
+    // días cerrados (antes de hoy) para que no baje en la mañana; si aún no hay ninguno, usa hoy.
+    const diasDe = lim => new Set([...cj.filter(p => p.fecha <= lim).map(p => p.fecha), ...D.asistencia.filter(a => a.mercado === m && a.marca === 'Entrada' && a.fecha >= desde && a.fecha <= lim).map(a => a.fecha)]);
+    let dias = diasDe(addDias(h, -1)), base = cj.filter(p => p.fecha < h);
+    if (!dias.size) { dias = diasDe(hasta); base = cj; }
+    const prom = dias.size ? base.length / dias.size : 0;
+    const consumo = Math.round(prom * nDias);
+    return { m, vxd, cuota, cj: cj.length, dEf: dias.size, prom, consumo, saldo: cuota - consumo };
+  }).sort((x, y) => y.consumo / (y.cuota || 1) - x.consumo / (x.cuota || 1) || y.consumo - x.consumo);
+  const T = rows.reduce((t, r) => { ['vxd', 'cuota', 'cj', 'prom', 'consumo', 'saldo'].forEach(k => t[k] += r[k]); return t; }, { vxd: 0, cuota: 0, cj: 0, prom: 0, consumo: 0, saldo: 0 });
+  const barra = (a, b) => { const p = pct(a, b); return `<div class="mini"><span class="b"><i style="width:${Math.min(100, p)}%"></i></span><span>${p}%</span></div>`; };
+  const saldoTd = v => `<td>${v < 0 ? `<span class="st err">${fmt(v)}</span>` : fmt(v)}</td>`;
+  const fila = (r, foot) => `<tr><td>${foot ? 'Total' : `<b>${esc(r.m)}</b>`}</td>
+    <td class="sep">${r.vxd}</td><td>${nDias}</td><td><b>${fmt(r.cuota)}</b></td>
+    <td class="sep">${fmt(r.cj)}</td><td>${foot ? '' : r.dEf}</td><td><b>${fmtProm(r.prom)}</b></td><td>${pct1(r.prom, r.cuota)}</td>
+    <td class="sep"><b>${fmt(r.consumo)}</b></td><td>${barra(r.consumo, r.cuota)}</td>${saldoTd(r.saldo)}</tr>`;
+  $('#subProy').textContent = `${nDias} días de campaña (lunes a sábado, ${fCorta(ini)} al ${fCorta(fin)}) · consumo proyectado = canjes promedio por día efectivo × ${nDias} días · el promedio usa los días ya cerrados que el mercado trabajó (hoy no cuenta hasta mañana) · ritmo del periodo ${desde === hasta ? fCorta(desde) : fCorta(desde) + ' al ' + fCorta(hasta)} · ordenado por alcance proyectado`;
+  $('#kProy').innerHTML = `<div>Objetivo según cuota<b>${fmt(T.cuota)}</b></div><div>Avance despliegue<b>${fmt(T.cj)} · ${pct1(T.cj, T.cuota)}</b></div>`
+    + `<div>Consumo proyectado<b>${fmt(T.consumo)} · ${pct(T.consumo, T.cuota)}%</b></div><div>Saldo residual<b>${fmt(T.saldo)}</b></div>`;
+  $('#tProy').innerHTML = `<thead><tr><th></th><th colspan="3" class="g1 sep">Cuota</th><th colspan="4" class="g2 sep">Canjes efectivos</th><th colspan="3" class="g3 sep">Proyectado</th></tr>
+    <tr><th>Mercado</th><th class="sep">Vales x día</th><th>Nº días</th><th>Cuota total</th><th class="sep">Canjes</th><th title="Días ya cerrados que el mercado trabajó">Días efect.</th><th>Canjes prom</th><th title="Canjes promedio ÷ cuota total">Alcance prom</th>
+    <th class="sep">Consumo proyectado</th><th>Alcance proyectado</th><th title="Cuota total − consumo proyectado">Saldo residual</th></tr></thead>
+    <tbody>${rows.map(r => fila(r)).join('')}</tbody><tfoot>${fila(T, true)}</tfoot>`;
+}
+// Relevo de stock de los promotores: último relevo de cada mercado dentro del periodo elegido.
+function tablaStock() {
+  const R = filtrar(D.stock), [a, b] = rango(), h = hoy();
+  const mercados = [...ORDEN_EFECTIVOS.filter(m => D.mercados.includes(m)), ...D.mercados.filter(m => !ORDEN_EFECTIVOS.includes(m))]
+    .filter(m => !F.mercado || m === F.mercado);
+  const ult = {};
+  R.forEach(r => { const k = r.fecha + ' ' + r.hora; if (!ult[r.mercado] || k > ult[r.mercado]._k) ult[r.mercado] = Object.assign(r, { _k: k }); });
+  const k = { rel: 0, q: 0, bajo: 0, disp: 0, tr: 0 };
+  const celda = (r, s) => {
+    const e = r[s.k + '_estado'], tot = num(r[s.k + '_total']), tr = r[s.k + '_transito'] === 'SÍ' ? num(r[s.k + '_transito_sacos']) : 0;
+    if (!e || e === 'No trabaja este SKU') return '<span class="sk na">No trabaja</span>';
+    k.disp += tot; k.tr += tr;
+    const quiebre = e === 'Quiebre total' || !tot;
+    if (quiebre) k.q++; else if (tot < C.STOCK_BAJO) k.bajo++;
+    const chip = quiebre ? '<span class="sk q">Quiebre</span>' : `<span class="sk${tot < C.STOCK_BAJO ? ' bajo' : ''}" title="Exhibición ${fmt(num(r[s.k + '_exhibicion']))} · almacén ${fmt(num(r[s.k + '_almacen']))}">${fmt(tot)}</span>`;
+    return chip + (tr ? `<small>+${fmt(tr)} en tránsito</small>` : '');
+  };
+  const rows = mercados.map(m => {
+    const r = ult[m];
+    if (!r) return `<tr><td><b>${esc(m)}</b></td><td colspan="${C.STOCK_SKUS.length + 3}" style="text-align:left"><span class="st na">Sin relevo${a === b ? (a === h ? ' hoy' : ' ese día') : ' en el periodo'}</span></td></tr>`;
+    k.rel++;
+    const n = R.filter(x => x.mercado === m).length;
+    return `<tr><td><b>${esc(m)}</b></td>
+      <td>${fCorta(r.fecha)} ${esc(r.hora)}<small>${esc(r.turno)} · ${esc(r.promotor)}${n > 1 ? ` · ${n} relevos` : ''}</small></td>
+      ${C.STOCK_SKUS.map(s => `<td>${celda(r, s)}</td>`).join('')}
+      <td class="mot">${r.alerta === 'SÍ' ? `${esc(String(r.motivos || '').split(' | ').join(' · '))}<small>${r.aviso_distribuidor === 'SÍ' ? 'Se alertó al distribuidor' : r.aviso_distribuidor === 'NO' ? '<span style="color:var(--err)">No se alertó al distribuidor</span>' : ''}</small>` : '<span class="st ok">Sin alerta</span>'}</td>
+      <td>${r.foto ? `<a href="${esc(r.foto)}" target="_blank" rel="noopener">Ver foto</a>` : '—'}</td></tr>`;
+  });
+  $('#subStock').textContent = `Relevo de stock de los promotores · último relevo de cada mercado ${a === b ? (a === h ? 'de hoy' : 'del ' + fCorta(a)) : `entre el ${fCorta(a)} y el ${fCorta(b)}`} · en sacos · bajo stock = menos de ${C.STOCK_BAJO} sacos`;
+  $('#kStock').innerHTML = [
+    ['Mercados relevados', `${k.rel} <span style="font-size:14px;color:var(--muted)">de ${mercados.length}</span>`],
+    ['Quiebres', `<span style="color:${k.q ? 'var(--err)' : 'inherit'}">${fmt(k.q)}</span>`],
+    ['Bajo stock', `<span style="color:${k.bajo ? 'var(--warn)' : 'inherit'}">${fmt(k.bajo)}</span>`],
+    ['Sacos disponibles', fmt(k.disp)],
+    ['Sacos en tránsito', fmt(k.tr)],
+  ].map(([l, v]) => `<div>${l}<b>${v}</b></div>`).join('');
+  $('#tStock').innerHTML = `<thead><tr><th>Mercado</th><th>Relevo</th>${C.STOCK_SKUS.map(s => `<th>${s.marca} ${s.kg}</th>`).join('')}<th style="text-align:left">Alerta / motivo</th><th>Evidencia</th></tr></thead><tbody>${rows.join('')}</tbody>`;
+}
+function tablaCuadre() {
+  const cfg = D.config || {};
+  const mercados = mercadosVista();
+  const t = { c: 0, u: 0, e: 0, sinCuota: 0 };
+  const h = hoy(), finC = periodoCamp().b; // acumulado hasta el fin del periodo elegido
+  const nDias = D.inicio ? diasHabiles(D.inicio, finC).length : 0;
+  const fila = (m, cuota, usados, esperado, foot) => {
+    const tiene = cuota > 0, p = tiene ? pct(usados, cuota) : 0;
+    const saldo = tiene ? cuota - usados : null;
+    const dif = usados - esperado;
+    return `<tr><td>${foot ? 'Total' : `<b>${esc(m)}</b>`}</td><td class="n">${tiene ? fmt(cuota) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td class="n">${fmt(esperado)}</td><td class="n"><b>${fmt(usados)}</b></td>
+      <td class="n">${dif >= 0 ? `<span class="st ok">${dif > 0 ? '+' : ''}${fmt(dif)}</span>` : `<span class="st err">${fmt(dif)}</span>`}</td>
+      <td class="n">${saldo == null ? '<span style="color:var(--muted)">—</span>' : saldo < 0 ? `<span class="st err">${fmt(saldo)}</span>` : fmt(saldo)}</td>
+      <td class="n">${tiene ? `<div class="mini"><span>${p}%</span><span class="b"><i style="width:${Math.min(100, p)}%"></i></span></div>` : '<span style="color:var(--muted)">sin cuota</span>'}</td></tr>`;
+  };
+  const rows = mercados.map(m => {
+    const cuota = num(cfg['cuota_vales_' + m]);
+    const usados = D.pedidos.filter(p => p.mercado === m && p.fecha <= finC).reduce((s, p) => s + p._vales, 0);
+    const esperado = Math.min(cuota || Infinity, D.meta * impulsadorasPorMercado(m) * nDias);
+    t.c += cuota; t.u += usados; t.e += esperado; if (!cuota) t.sinCuota++;
+    return fila(m, cuota, usados, esperado);
+  });
+  $('#subCuadre').textContent = `Vales entregados desde ${D.inicio ? fCorta(D.inicio) : 'el inicio'} contra los vales físicos asignados a cada mercado · esperado = ${D.meta} por día × ${nDias} día${nDias === 1 ? '' : 's'} de trabajo (lunes a sábado) · acumulado al ${finC === h ? 'día de hoy' : fCorta(finC)}${D.fin ? ` · cierre ${fCorta(D.fin)}` : ''}`
+    + (t.sinCuota ? ` · falta cargar la cuota de ${t.sinCuota} mercado${t.sinCuota === 1 ? '' : 's'}` : '');
+  $('#tCuadre').innerHTML = `<thead><tr><th>Mercado</th><th class="n">Cuota (vales físicos)</th><th class="n" title="Lo que debería haber salido a la fecha según la meta diaria">Esperado a la fecha</th><th class="n">Entregados</th><th class="n">vs esperado</th><th class="n">Saldo</th><th class="n">Consumo</th></tr></thead>
+    <tbody>${rows.join('')}</tbody><tfoot>${fila('', t.sinCuota ? 0 : t.c, t.u, t.e, true)}</tfoot>`;
+}
+function listaInc(I, P) {
+  const obs = P.filter(p => p.observaciones || p.validacion === 'Observado' || p.alertas).map(p => ({
+    fecha: p.fecha, hora: p.hora, mercado: p.mercado, impulsadora: p.impulsadora,
+    tipo: p.validacion === 'Observado' ? 'Canje observado' : p.alertas ? 'Alerta: ' + p.alertas : 'Observación', detalle: p.observaciones || (p.codigos_vale ? 'Vale ' + p.codigos_vale : ''), foto: '',
+  }));
+  const all = [...I.map(i => ({ ...i, tipo: i.tipo_incidencia })), ...obs].sort((a, b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora));
+  const porTipo = {}; I.forEach(i => porTipo[i.tipo_incidencia] = (porTipo[i.tipo_incidencia] || 0) + 1);
+  const top = Object.entries(porTipo).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([t, n]) => `${t} (${n})`).join(' · ');
+  $('#subInc').textContent = `${I.length} incidencia${I.length === 1 ? '' : 's'}${top ? ' · más frecuentes: ' + top : ''}`;
+  $('#lInc').innerHTML = all.slice(0, 40).map(i => `<div class="inc"><div class="t">${fCorta(i.fecha)} ${esc(i.hora)}</div><div><b>${esc(i.tipo)}</b> · ${esc(i.mercado)} · ${esc(i.impulsadora)}<div style="color:var(--ink2)">${esc(i.detalle)}${i.foto ? ` · <a href="${esc(i.foto)}" target="_blank" rel="noopener">ver foto</a>` : ''}</div></div></div>`).join('')
+    || '<div class="empty">Sin incidencias en este periodo</div>';
+}
+function galeria(canjes) {
+  const list = canjes.filter(p => p.foto_entrega).sort((a, b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora));
+  $('#gal').innerHTML = list.slice(0, galN).map(p => `<button class="ph" data-id="${esc(p.id)}"><img loading="lazy" src="${esc(thumb(p.foto_entrega))}" alt="Canje ${esc(p.codigos_vale)}">
+    <div><b>${esc(p.mercado)}</b>${esc(p.impulsadora)} · ${fCorta(p.fecha)} ${esc(p.hora)}<br>Vale ${esc(p.codigos_vale)}</div></button>`).join('') || '<div class="empty">Aún no hay canjes en este periodo</div>';
+  $('#btnMas').hidden = list.length <= galN;
+}
+function tablaDetalle(P) {
+  const q = F.buscar.toLowerCase();
+  const rows = P.filter(p => !q || [p.codigos_vale, p.cliente, p.n_comprobante, p.impulsadora, p.puesto, p.mercado].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora));
+  const est = p => !p._canje ? (completable(p) ? '<span class="st warn">● Completar canje</span>' : '<span class="st na">Pedido</span>') : p.validacion === 'Observado' ? '<span class="st err">✕ Observado</span>'
+    : p.validacion === 'Válido' ? '<span class="st ok">✔ Validado</span>' : !p._cumple ? '<span class="st warn">● Revisar</span>'
+    : INTERNO ? '<span class="st warn">● Por validar</span>' : '<span class="st na">En revisión</span>';
+  $('#tDetalle').innerHTML = `<thead><tr><th>Fecha</th><th>Hora</th><th>Mercado</th><th>Impulsadora</th><th>Cliente</th><th>DNI</th><th>Comprobante</th><th class="n">Ricocan</th><th class="n">Ricocat</th><th class="n">Vales</th><th>Código vale</th><th>Estado</th></tr></thead>
+    <tbody>${rows.slice(0, 300).map(p => `<tr${p._canje || completable(p) ? ` data-id="${esc(p.id)}" style="cursor:pointer"` : ''}><td>${fCorta(p.fecha)}</td><td>${esc(p.hora)}</td><td>${esc(p.mercado)}</td><td>${esc(p.impulsadora)}</td>
+      <td>${esc(p.cliente)}${p.puesto ? `<div style="color:var(--muted);font-size:12px">${esc(p.puesto)}</div>` : ''}</td><td>${esc(p.dni || '')}</td><td>${esc(p.tipo_comprobante)} ${esc(p.n_comprobante)}</td>
+      <td class="n">${p._rc}</td><td class="n">${p._rt}</td><td class="n">${p._vales || ''}</td><td><b>${esc(p.codigos_vale)}</b></td><td>${est(p)}</td></tr>`).join('')
+      || '<tr><td colspan="12" class="empty">Sin registros</td></tr>'}</tbody>`
+    + (rows.length > 300 ? `<caption style="caption-side:bottom;color:var(--muted);padding:8px">Mostrando 300 de ${rows.length}. Descarga el CSV para ver todo.</caption>` : '');
+}
+
+/* ---------- detalle de canje ---------- */
+// Pedido guardado sin vale que con la regla vigente sí llega a los sacos del canje (solo interno).
+const completable = p => INTERNO && !p._canje && p._tot >= (D.reglas[p.mercado] || Infinity);
+async function comprimir(file, max = 1280, q = 0.7) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', q);
+  } finally { URL.revokeObjectURL(url); }
+}
+function abrir(id) {
+  const p = D.pedidos.find(x => x.id === id); if (!p) return;
+  const img = (u, t) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(thumb(u, 800))}" alt="${t}"><span>${t}</span></a>` : '';
+  const comp = completable(p);
+  $('#mbox').innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;align-items:start"><div><h2 style="margin:0">${p._canje ? `Canje · vale ${esc(p.codigos_vale)}` : 'Pedido sin vale'}</h2>
+    <div style="color:var(--muted)">${esc(p.mercado)} · ${esc(p.impulsadora)} · ${fCorta(p.fecha)} ${esc(p.hora)}</div></div><button class="tbtn" id="mClose">Cerrar</button></div>
+    <dl class="kv" style="margin-top:14px"><dt>Cliente</dt><dd>${esc(p.cliente)}${p.puesto ? ' · ' + esc(p.puesto) : ''}</dd>${p.dni ? `<dt>DNI</dt><dd>${esc(p.dni)}</dd>` : ''}
+    <dt>Sacos pedidos en el mercado</dt><dd>${esc(p.sacos_requeridos || D.reglas[p.mercado] || '')}</dd>
+    <dt>Comprobante</dt><dd>${esc(p.tipo_comprobante)} ${esc(p.n_comprobante)}</dd>
+    <dt>Sacos</dt><dd>Ricocan 22 kg: ${p._rc - p._rc15}${p._rc15 ? ` · Ricocan 15 kg: ${p._rc15}` : ''} · Ricocat 15 kg: ${p._rt - p._rt9}${p._rt9 ? ` · Ricocat 9 kg: ${p._rt9}` : ''} · ${fmt(p._kg)} kg</dd>
+    <dt>Vales</dt><dd>${p._vales}</dd><dt>Compra en Lima</dt><dd>${esc(p.compra_lima)}</dd>
+    <dt>Mecánica</dt><dd>${esc(p.cumple_mecanica)}${INTERNO && p.alertas ? ' · ' + esc(p.alertas) : ''}</dd>
+    ${p._canje ? `<dt>Validación</dt><dd>${valTxt(p)}</dd>` : ''}${INTERNO && p.observaciones ? `<dt>Observaciones</dt><dd>${esc(p.observaciones)}</dd>` : ''}${INTERNO && p.celular ? `<dt>Celular</dt><dd>${esc(p.celular)}</dd>` : ''}</dl>
+    <div class="imgs">${img(p.foto_comprobante, 'Foto 1 · Boleta / factura / nota de venta')}${img(p.foto_entrega, 'Foto 2 · Cliente con el vale')}${img(p.firma, 'Firma del cliente')}</div>
+    ${INTERNO && p._canje ? `<div class="valbox"><b>Validar este canje</b><div style="color:var(--muted);font-size:13px">Revisa las fotos: boleta con los sacos y el cliente con el vale.</div>
+      <input id="vNota" placeholder="Motivo (obligatorio si es Observado)">
+      <div class="acts"><button class="bok" data-val="Válido">✔ Válido</button><button class="bobs" data-val="Observado">✕ Observado</button>${p.validacion && p.validacion !== 'Pendiente' ? '<button class="bpen" data-val="Pendiente">Volver a pendiente</button>' : ''}</div>
+      <div id="vErr" style="color:var(--err);font-size:13px;margin-top:6px"></div></div>` : ''}
+    ${comp ? `<div class="valbox"><b>Completar canje</b><div style="color:var(--muted);font-size:13px">Se guardó como pedido porque ese día la regla era ${esc(p.sacos_requeridos || '?')} sacos. Con la regla vigente (${D.reglas[p.mercado]} sacos) sí es canje. Ingresa el vale entregado y la foto; luego valídalo como cualquier canje.</div>
+      <label class="cl">Código del vale (7 números)<input id="cCod" inputmode="numeric" maxlength="9" placeholder="Ej. 1234567"></label>
+      <label class="cl">DNI del cliente${p.dni && !/^\d{8}$/.test(p.dni) ? ` <span style="color:var(--err)">(guardado con ${String(p.dni).length} dígitos: revisa si le falta un 0 adelante)</span>` : ''}<input id="cDni" inputmode="numeric" maxlength="12" value="${esc(p.dni || '')}"></label>
+      <label class="cl">Foto del cliente con el vale (obligatoria)<input id="cFoto" type="file" accept="image/*"></label>
+      <label class="cl">Firma o foto de la planilla firmada (opcional)<input id="cFirma" type="file" accept="image/*"></label>
+      <label class="cl">Nota (opcional)<input id="cNota" placeholder="Ej. vale entregado el 9/11, foto enviada por la impulsadora"></label>
+      <div class="acts"><button class="bok" id="cGo">Guardar como canje</button></div>
+      <div id="cErr" style="color:var(--err);font-size:13px;margin-top:6px"></div></div>` : ''}`;
+  if (comp) $('#cGo').onclick = () => completar(p);
+  $('#modal').hidden = false;
+  $('#mClose').onclick = () => $('#modal').hidden = true;
+  $('#mbox').querySelectorAll('[data-val]').forEach(b => b.onclick = () => validar(p, b.dataset.val));
+}
+function valTxt(p) {
+  if (p.validacion === 'Válido') return '<span class="st ok">✔ Validado' + (INTERNO && p.validado_por ? ' por ' + esc(p.validado_por) + (p.validado_en ? ' · ' + esc(p.validado_en.slice(5, 16)) : '') : ' por Free') + '</span>';
+  if (p.validacion === 'Observado') return '<span class="st err">✕ Observado' + (INTERNO && p.validado_por ? ' por ' + esc(p.validado_por) : '') + '</span>';
+  return INTERNO ? '<span class="st warn">● Pendiente de validar</span>' : '<span class="st na">En revisión por Free</span>';
+}
+async function completar(p) {
+  const err = t => { $('#cErr').textContent = t; };
+  const codigo = $('#cCod').value.replace(/[\s-]/g, ''), dni = $('#cDni').value.trim(), f = $('#cFoto').files[0], g = $('#cFirma').files[0];
+  if (!/^\d{7}$/.test(codigo)) return err('El código del vale tiene 7 números');
+  if (!/^\d{8}$/.test(dni) && !/^[A-Za-z0-9]{9,12}$/.test(dni)) return err('El DNI debe tener 8 dígitos');
+  if (!f) return err('Falta la foto del cliente con el vale');
+  err('Guardando…'); $('#cGo').disabled = true;
+  try {
+    const foto_entrega = await comprimir(f), firma = g ? await comprimir(g) : '';
+    if (!DEMO) {
+      const r = await postAPI({ tipo: 'completar_canje', id: p.id, codigo, dni, foto_entrega, firma, nota: $('#cNota').value.trim(), usuario: CI.usuario, clave: CI.clave });
+      if (!r.ok) { err(r.error || 'No se pudo guardar'); $('#cGo').disabled = false; return; }
+      Object.assign(p, r.pedido);
+    } else Object.assign(p, { es_canje: 'SÍ', vales: 1, codigos_vale: codigo, dni, foto_entrega, firma, validacion: 'Pendiente', cumple_mecanica: 'SÍ', sacos_requeridos: D.reglas[p.mercado] });
+    p._vales = num(p.vales); p._canje = true; p._cumple = p.cumple_mecanica === 'SÍ' && p.validacion !== 'Observado';
+    pintar(); abrir(p.id);
+  } catch { err('Sin conexión. Intenta de nuevo.'); $('#cGo').disabled = false; }
+}
+async function validar(p, valor) {
+  const nota = ($('#vNota').value || '').trim();
+  if (valor === 'Observado' && !nota) { $('#vErr').textContent = 'Escribe el motivo de la observación'; $('#vNota').focus(); return; }
+  $('#vErr').textContent = 'Guardando…';
+  try {
+    if (!DEMO) {
+      const r = await postAPI({ tipo: 'validar', id: p.id, validacion: valor, nota, usuario: CI.usuario, clave: CI.clave });
+      if (!r.ok) { $('#vErr').textContent = r.error || 'No se pudo guardar'; return; }
+      p.validado_por = r.validado_por;
+    } else p.validado_por = 'Supervisor (práctica)';
+    p.validacion = valor; p.validado_en = valor === 'Pendiente' ? '' : new Date().toLocaleString('sv-SE', { timeZone: 'America/Lima' });
+    if (nota) p.observaciones = (p.observaciones ? p.observaciones + ' | ' : '') + 'Validación: ' + nota;
+    p._cumple = p._canje && p.cumple_mecanica === 'SÍ' && p.validacion !== 'Observado';
+    pintar(); abrir(p.id);
+  } catch { $('#vErr').textContent = 'Sin conexión. Intenta de nuevo.'; }
+}
+document.addEventListener('click', e => { const el = e.target.closest('[data-id]'); if (el && !e.target.closest('#modal')) abrir(el.dataset.id); });
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') $('#modal').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#modal').hidden = true; });
+
+/* ---------- controles ---------- */
+$('#fPeriodo').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  F.p = b.dataset.p; [...$('#fPeriodo').children].forEach(x => x.classList.toggle('on', x === b));
+  $('#fRango').hidden = F.p !== 'rango';
+  if (F.p === 'rango' && !F.desde) { const [a, z] = rango(); $('#fDesde').value = a; $('#fHasta').value = z; }
+  galN = 24; pintar();
+});
+$('#fDesde').onchange = e => { F.desde = e.target.value; pintar(); };
+$('#fHasta').onchange = e => { F.hasta = e.target.value; pintar(); };
+$('#fMercado').onchange = e => { F.mercado = e.target.value; galN = 24; pintar(); };
+$('#fBuscar').oninput = e => { F.buscar = e.target.value; tablaDetalle(filtrar(D.pedidos)); };
+$('#btnMas').onclick = () => { galN += 24; galeria(filtrar(D.pedidos).filter(p => p._canje)); };
+$('#btnPrint').onclick = () => window.print();
+$('#btnCsv').onclick = () => {
+  const cols = ['fecha', 'hora', 'mercado', 'impulsadora', 'puesto', 'cliente', 'dni', 'tipo_comprobante', 'n_comprobante', 'sacos_requeridos', 'sacos_ricocan', 'sacos_ricocan_15kg', 'sacos_ricocat', 'sacos_ricocat_9kg', 'sacos_total', 'kg_total', 'es_canje', 'vales', 'codigos_vale', 'cumple_mecanica', 'validacion', 'alertas', 'observaciones', 'foto_entrega', 'foto_comprobante', 'firma'];
+  const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+  const csv = '﻿' + [cols.join(';'), ...filtrar(D.pedidos).map(p => cols.map(c => q(c === 'kg_total' ? p._kg : p[c])).join(';'))].join('\r\n');
+  const [a, b] = rango();
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  link.download = `canje-rinti_${a}_${b}${F.mercado ? '_' + F.mercado.replace(/\s+/g, '-') : ''}.csv`;
+  link.click(); setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+};
+
+/* ---------- datos de ejemplo ---------- */
+function demo() {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const h = hoy(), dias = 9;
+  const equipo = C.MERCADOS.map((m, i) => ({ nombre: ['Ana', 'Lucía', 'Rosa', 'Milagros', 'Katy', 'Diana', 'Yesenia', 'Flor', 'Carmen'][i] + ' ' + ['Quispe', 'Huamán', 'Flores', 'Rojas', 'Torres', 'Mendoza', 'Vargas', 'Ramos', 'Castillo'][i], rol: 'impulsadora', mercado: m }));
+  equipo.push({ nombre: 'Jorge Salazar', rol: 'supervisor', mercado: '' });
+  const ph = (t, c) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="${c}"/><text x="200" y="160" font-family="sans-serif" font-size="22" fill="#fff" text-anchor="middle">${t}</text></svg>`);
+  const asistencia = [], pedidos = [], incidencias = [], cierres = [];
+  let vale = 1001, n = 0;
+  const ahoraH = parseInt(new Date().toLocaleTimeString('en-GB', { timeZone: 'America/Lima', hour: '2-digit', hour12: false }), 10);
+  for (let d = dias - 1; d >= 0; d--) {
+    const f = addDias(h, -d);
+    equipo.filter(e => e.rol === 'impulsadora').forEach(e => {
+      if (rnd() < 0.06) return; // falta
+      const ent = `0${8 + (rnd() < 0.15 ? 1 : 0)}:${String(Math.floor(rnd() * 50)).padStart(2, '0')}`.slice(-5);
+      asistencia.push({ id: 'a' + n++, fecha: f, hora: ent, impulsadora: e.nombre, mercado: e.mercado, marca: 'Entrada' });
+      const limiteH = d === 0 ? Math.min(18, ahoraH) : 18;
+      if (d > 0) asistencia.push({ id: 'a' + n++, fecha: f, hora: `17:${String(Math.floor(rnd() * 59)).padStart(2, '0')}`, impulsadora: e.nombre, mercado: e.mercado, marca: 'Salida' });
+      const nped = Math.floor(rnd() * 6) + 5;
+      let vDia = 0;
+      for (let k = 0; k < nped; k++) {
+        const hh = 9 + Math.floor(rnd() * 9); if (hh > limiteH) continue;
+        const canje = rnd() < 0.68, req = C.SACOS_POR_MERCADO[e.mercado] || 5;
+        const tot = canje ? req + Math.floor(rnd() * 4) : Math.max(1, Math.floor(rnd() * req));
+        const rc = Math.round(tot * (0.4 + rnd() * 0.6)), rt = tot - rc;
+        const vales = tot >= req ? 1 : 0;
+        const cod = Array.from({ length: vales }, () => 'RT-' + vale++);
+        const obs = canje && rnd() < 0.05;
+        pedidos.push({
+          id: 'p' + n++, fecha: f, hora: `${String(hh).padStart(2, '0')}:${String(Math.floor(rnd() * 60)).padStart(2, '0')}`, impulsadora: e.nombre, mercado: e.mercado,
+          puesto: /Productores/.test(e.mercado) ? pick(C.PUESTOS_PRODUCTORES).split(' · ')[0] : 'Pto. ' + Math.floor(rnd() * 300),
+          cliente: pick(['Bodega Rosita', 'Comercial Ayala', 'Distribuidora Paola', 'Market El Sol', 'Veterinaria Max', 'Inversiones Luz', 'Agro Pet Lima', 'Comercial Huanca']),
+          tipo_comprobante: pick(['Boleta', 'Factura', 'Nota de venta']), n_comprobante: 'B001-' + (20000 + n), sacos_ricocan: rc, sacos_ricocat: rt,
+          dni: vales ? '•••••' + String(100 + Math.floor(rnd() * 900)) : '', sacos_requeridos: req,
+          es_canje: vales ? 'SÍ' : 'NO', compra_lima: vales ? 'SÍ' : '', vales, codigos_vale: cod.join(', '), cumple_mecanica: vales ? (rnd() < 0.03 ? 'REVISAR' : 'SÍ') : 'N/A',
+          alertas: '', validacion: vales ? (obs ? 'Observado' : d > 1 ? 'Válido' : 'Pendiente') : '', observaciones: obs ? 'Boleta ilegible, se pidió nueva foto' : '',
+          foto_entrega: vales ? ph('Entrega vale ' + cod[0], pick(['#7a1222', '#8a3b12', '#3d4a5c', '#5b3a6b'])) : '', foto_comprobante: vales ? ph('Boleta', '#55565b') : '', firma: vales ? ph('Firma', '#86878c') : '',
+        });
+        vDia += vales;
+      }
+      if (d > 0) cierres.push({ id: 'c' + n++, fecha: f, hora: '18:30', supervisor: 'Jorge Salazar', mercado: e.mercado, pavos_inicio: 10, pavos_entregados: Math.min(10, vDia + (rnd() < 0.08 ? 1 : 0)), vales_reportados: vDia });
+      if (rnd() < 0.12) incidencias.push({ id: 'i' + n++, fecha: f, hora: '1' + Math.floor(rnd() * 7) + ':15', impulsadora: e.nombre, mercado: e.mercado, tipo_incidencia: pick(C.TIPOS_INCIDENCIA.slice(0, 6)), detalle: pick(['El puesto no tenía Ricocat de 15 kg.', 'Cliente compró 6 sacos, completa mañana.', 'Se acabaron los vales a las 4 pm.', 'Distribuidor no llegó con el pedido.']), foto: '' });
+    });
+  }
+  const stock = [];
+  equipo.filter(e => e.rol === 'impulsadora').forEach((e, i) => {
+    if (i === 4) return; // un mercado sin relevo
+    const r = { id: 's' + n++, fecha: h, hora: '08:' + String(10 + i * 4), promotor: e.nombre, mercado: e.mercado, turno: 'Apertura', alerta: 'NO', foto: ph('Ruma', '#3d4a5c') };
+    C.STOCK_SKUS.forEach((s, j) => {
+      const x = rnd(), est = x < 0.12 ? 'Quiebre total' : x < 0.2 ? 'No trabaja este SKU' : 'Con stock';
+      const ex = est === 'Con stock' ? Math.floor(rnd() * 8) + (j ? 0 : 2) : 0, al = est === 'Con stock' ? Math.floor(rnd() * 12) : 0;
+      Object.assign(r, { [s.k + '_estado']: est, [s.k + '_exhibicion']: ex, [s.k + '_almacen']: al, [s.k + '_total']: est === 'No trabaja este SKU' ? '' : ex + al, [s.k + '_transito']: rnd() < 0.3 ? 'SÍ' : 'NO' });
+      if (r[s.k + '_transito'] === 'SÍ') r[s.k + '_transito_sacos'] = 5 + Math.floor(rnd() * 15);
+      if (est !== 'No trabaja este SKU' && ex + al < C.STOCK_BAJO) r.alerta = 'SÍ';
+    });
+    if (r.alerta === 'SÍ') { r.motivos = pick(C.STOCK_MOTIVOS) + (rnd() < 0.4 ? ' | ' + C.STOCK_MOTIVOS[3] : ''); r.aviso_distribuidor = rnd() < 0.7 ? 'SÍ' : 'NO'; }
+    stock.push(r);
+  });
+  return { ok: true, config: { meta_diaria_por_impulsadora: '6', impulsadoras_planificadas: '9', hora_ingreso: '09:00', fecha_inicio: addDias(h, -(dias - 1)) }, equipo, asistencia, pedidos, incidencias, cierres, stock };
+}
+
+$('#loginForm').addEventListener('submit', ingresar);
+$('#btnSalir').onclick = () => { if (INTERNO) { CI = null; guardarCI(null); } else { K = ''; guardarK(''); } D = null; location.reload(); };
+cargar();
+if (!DEMO) setInterval(() => { if ((INTERNO ? CI : K) && $('#modal').hidden) cargar(); }, 60000);
+})();
+</script>
+</body>
+</html>

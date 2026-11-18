@@ -1,0 +1,9 @@
+{
+  "name": "Canje Mayorista AJE · Registro",
+  "short_name": "Canje AJE",
+  "start_url": "./app.html",
+  "display": "standalone",
+  "background_color": "#f4f4f2",
+  "theme_color": "#3b47e0",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
