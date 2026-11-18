@@ -64,6 +64,7 @@ function setup() {
   if (eq.getLastRow() < 2) {
     const filas = MERCADOS.map(function (m) { return ['Canjista ' + m, 'canjista', m, 'SI', USUARIO_MERCADO[m], claveAleatoria_(), '']; });
     filas.push(['Supervisor', 'supervisor', '', 'SI', 'supervisor', claveAleatoria_(), '']);
+    filas.push(['Coordinador Free', 'coordinador', '', 'SI', 'coordinador', claveAleatoria_(), '']);
     eq.getRange(2, 1, filas.length, 7).setValues(filas);
   }
 
@@ -101,7 +102,7 @@ function doGet(e) {
   try {
     if (p.action === 'data') {
       if (!p.k || p.k !== P.getProperty('DASH_TOKEN')) return out_({ ok: false, code: 'auth', error: 'Link no autorizado' });
-      return out_(datos_());
+      return out_(datos_(false));
     }
     return out_({ ok: true, servicio: 'Canje Mayorista AJE' });
   } catch (err) {
@@ -121,6 +122,10 @@ function doPost(e) {
     const u = auth_(b);
     if (!u) return out_({ ok: false, code: 'auth', error: 'Usuario o contraseña incorrectos' });
     if (b.tipo === 'login') return out_({ ok: true, usuario: u, drops: drops_() });
+    if (b.tipo === 'datos_interno') {
+      if (!esJefe_(u)) return out_({ ok: false, code: 'auth', error: 'El acceso interno es solo para el supervisor y el coordinador' });
+      return out_(Object.assign(datos_(true), { usuario: u }));
+    }
     const fn = { asistencia: asistencia_, canje: canje_, incidencia: incidencia_ }[b.tipo];
     if (!fn) return out_({ ok: false, code: 'val', error: 'Tipo de registro desconocido' });
     if (!b.id) return out_({ ok: false, code: 'val', error: 'Falta el id del registro' });
@@ -135,7 +140,7 @@ function doPost(e) {
 /* ------------------------------------------------------------------ */
 
 function mercadoDe_(b, u) {
-  const m = u.rol === 'supervisor' ? limpio_(b.mercado) : u.mercado;
+  const m = esJefe_(u) ? limpio_(b.mercado) : u.mercado;
   if (MERCADOS.indexOf(m) < 0) throw val_('Mercado inválido: ' + m);
   return m;
 }
@@ -195,13 +200,23 @@ function incidencia_(b, u) {
   });
 }
 
-/** Datos para el dashboard (cuando se conecte en vivo). */
-function datos_() {
+/**
+ * Datos para el dashboard. Cliente (AJE): canjes sin ubicación e incidencias sin detalle ni foto.
+ * Interno (Free): todo, más la asistencia.
+ */
+function datos_(interno) {
   const ini = config_().fecha_inicio || '';
   const f = function (r) { return !ini || r.fecha >= ini; };
-  return { ok: true, generado: ahora_(), canjes: leer_('Canjes').filter(f), asistencia: leer_('Asistencia').filter(f),
-    incidencias: leer_('Incidencias').filter(f), drops: drops_() };
+  const canjes = leer_('Canjes').filter(f).map(function (r) { if (!interno) { delete r.lat; delete r.lng; } return r; });
+  const incidencias = leer_('Incidencias').filter(f).map(function (r) {
+    return interno ? r : { fecha: r.fecha, hora: r.hora, mercado: r.mercado, tipo_incidencia: r.tipo_incidencia };
+  });
+  const o = { ok: true, generado: ahora_(), canjes: canjes, incidencias: incidencias, drops: drops_() };
+  if (interno) o.asistencia = leer_('Asistencia').filter(f);
+  return o;
 }
+
+function esJefe_(u) { return /^(supervisor|coordinador)/.test(String(u && u.rol || '')); }
 
 /* ------------------------------------------------------------------ */
 /* Mecánica                                                            */
